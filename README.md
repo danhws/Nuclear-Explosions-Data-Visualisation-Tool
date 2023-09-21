@@ -1,6 +1,6 @@
 # Nuclear Explosions Data Visualisation Tool
 
-![Explorer Tool](InfoVis_Assignment3/NuclearExplosionsExplorer.png)
+![Explorer Tool](NuclearExplosionsExplorer.png)
 
 This tool enables the exploration of data of all recorded Nuclear Explosions detonated between 1945-1998. 
 

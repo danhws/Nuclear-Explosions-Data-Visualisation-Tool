@@ -1,0 +1,366 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "url": "https://raw.githubusercontent.com/danhws/InfoVis_Assignment3/main/nuclear_explosions.csv",
+    "format": {"type": "csv"}
+  },
+  "title": {
+    "text": "Nuclear Explosions Explorer (1945 - 1998)",
+    "fontSize": 28,
+    "anchor": "middle"
+  },
+  "params": [
+    {
+      "name": "rotate0",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": -90,
+        "max": 90,
+        "step": 1,
+        "name": "HorizontalRot"
+      }
+    },
+    {
+      "name": "rotate1",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": -90,
+        "max": 90,
+        "step": 1,
+        "name": "VerticalRot"
+      }
+    },
+    {
+      "name": "explosionSize",
+      "value": 3,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 6,
+        "step": 0.1,
+        "name": "YieldSize"
+      }
+    }
+  ],
+  "vconcat": [
+    {
+      "hconcat": [
+        {
+          "width": 600,
+          "height": 600,
+          "layer": [
+            {
+              "transform": [
+                {"filter": {"param": "typeSelect"}},
+                {"filter": {"param": "purposeSelect"}}
+              ],
+              "params": [
+                {
+                  "name": "brush",
+                  "select": {"type": "interval", "translate": true}
+                },
+                {
+                  "name": "countrySelect",
+                  "select": {
+                    "type": "point",
+                    "on": "click",
+                    "fields": ["country"]
+                  },
+                  "bind": "legend"
+                }
+              ],
+              "mark": {
+                "type": "circle",
+                "opacity": 0.7,
+                "stroke": "black",
+                "strokeWidth": 1
+              },
+              "encoding": {
+                "color": {
+                  "condition": {
+                    "param": "brush",
+                    "field": "country",
+                    "type": "nominal",
+                    "legend": {"title": "Country"}
+                  },
+                  "value": "grey"
+                },
+                "x": {
+                  "field": "year",
+                  "title": "Year",
+                  "type": "temporal",
+                  "timeUnit": "year",
+                  "scale": {"domain": [1945, 1999]}
+                },
+                "y": {
+                  "aggregate": "count",
+                  "field": "name",
+                  "type": "quantitative",
+                  "title": "Number of Explosions",
+                  "scale": {"domain": [0, 100]}
+                },
+                "tooltip": [
+                  {
+                    "aggregate": "max",
+                    "field": "yield_upper",
+                    "title": "Largest Explosion (kt)"
+                  },
+                  {
+                    "aggregate": "count",
+                    "field": "name",
+                    "title": "Number of Explosions"
+                  },
+                  {
+                    "field": "year",
+                    "title": "Year",
+                    "type": "temporal",
+                    "timeUnit": "year"
+                  }
+                ],
+                "size": {
+                  "aggregate": "max",
+                  "field": "yield_upper",
+                  "type": "quantitative",
+                  "legend": {
+                    "title": "Max Yield Estimate",
+                    "values": [10, 1000, 5000, 10000, 50000],
+                    "labelOffset": 1,
+                    "labelOverlap": false
+                  }
+                },
+                "opacity": {
+                  "condition": {"param": "countrySelect", "value": 0.7},
+                  "value": 0
+                }
+              }
+            },
+            {
+              "data": {"values": [{}]},
+              "encoding": {
+                "x": {
+                  "datum": {"year": 1963},
+                  "type": "temporal",
+                  "timeUnit": "year"
+                }
+              },
+              "layer": [
+                {"mark": {"type": "rule", "color": "red"}},
+                {
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "baseline": "bottom",
+                    "dx": -2,
+                    "dy": -2,
+                    "x": "width",
+                    "text": "Partial Test-Ban Treaty 1963",
+                    "color": "red"
+                  }
+                }
+              ]
+            },
+            {
+              "data": {"values": [{}]},
+              "encoding": {
+                "x": {
+                  "datum": {"year": 1996},
+                  "type": "temporal",
+                  "timeUnit": "year"
+                }
+              },
+              "layer": [
+                {"mark": {"type": "rule", "color": "red"}},
+                {
+                  "mark": {
+                    "type": "text",
+                    "align": "right",
+                    "baseline": "bottom",
+                    "dx": -2,
+                    "dy": -2,
+                    "x": "width",
+                    "text": "Comprehensive Test-Ban Treaty 1996",
+                    "color": "red"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "transform": [
+            {"filter": {"param": "countrySelect"}},
+            {"filter": {"param": "brush"}},
+            {"filter": {"param": "typeSelect"}},
+            {"filter": {"param": "purposeSelect"}}
+          ],
+          "width": 600,
+          "height": 600,
+          "projection": {
+            "type": "orthographic",
+            "rotate": {"expr": "[rotate0, rotate1, 0]"}
+          },
+          "layer": [
+            {
+              "data": {"sphere": true},
+              "mark": {"type": "geoshape", "fill": "aliceblue"}
+            },
+            {
+              "data": {
+                "name": "world",
+                "url": "data/world-110m.json",
+                "format": {"type": "topojson", "feature": "countries"}
+              },
+              "mark": {
+                "type": "geoshape",
+                "fill": "mintcream",
+                "stroke": "black"
+              }
+            },
+            {
+              "transform": [
+                {
+                  "filter": "(rotate0 * -1) - 90 < datum.longitude && datum.longitude < (rotate0 * -1) + 90 && (rotate1 * -1) - 90 < datum.latitude && datum.latitude < (rotate1 * -1) + 90"
+                }
+              ],
+              "mark": {
+                "type": "circle",
+                "opacity": 0.7,
+                "stroke": "black",
+                "strokeWidth": 1
+              },
+              "encoding": {
+                "longitude": {"field": "longitude", "type": "quantitative"},
+                "latitude": {"field": "latitude", "type": "quantitative"},
+                "color": {
+                  "field": "country",
+                  "type": "nominal",
+                  "legend": {"title": "Country"}
+                },
+                "tooltip": [
+                  {"field": "name", "type": "nominal", "title": "Name"},
+                  {
+                    "field": "year",
+                    "type": "temporal",
+                    "timeUnit": "year",
+                    "title": "Year"
+                  },
+                  {"field": "region", "type": "nominal", "title": "Region"},
+                  {
+                    "field": "yield_upper",
+                    "type": "quantitative",
+                    "title": "Estimated Upper Yield (kt)"
+                  }
+                ],
+                "size": {
+                  "legend": null,
+                  "field": "yield_upper",
+                  "type": "quantitative",
+                  "scale": {
+                    "type": "sqrt",
+                    "domain": [0, 100],
+                    "range": [0, {"expr": "pow(explosionSize, 3)"}]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "hconcat": [
+        {
+          "transform": [
+            {"filter": {"param": "countrySelect"}},
+            {"filter": {"param": "brush"}},
+            {"filter": {"param": "purposeSelect"}}
+          ],
+          "params": [
+            {
+              "name": "typeSelect",
+              "select": {"type": "point", "fields": ["type"]}
+            }
+          ],
+          "mark": "bar",
+          "width": 600,
+          "height": 100,
+          "encoding": {
+            "x": {
+              "aggregate": "count",
+              "field": "name",
+              "title": "Number of Explosions",
+              "scale": {"domain": [0, 1600]}
+            },
+            "y": {
+              "field": "type",
+              "type": "nominal",
+              "title": "Method of Deployment",
+              "scale": {"domain": ["ATMOSPHERIC", "UNDERGROUND"]}
+            },
+            "color": {
+              "condition": {
+                "param": "typeSelect",
+                "field": "country",
+                "type": "nominal"
+              },
+              "value": "grey"
+            },
+            "tooltip": {"aggregate": "count", "field": "name"}
+          }
+        },
+        {
+          "transform": [
+            {"filter": {"param": "typeSelect"}},
+            {"filter": {"param": "countrySelect"}},
+            {"filter": {"param": "brush"}}
+          ],
+          "params": [
+            {
+              "name": "purposeSelect",
+              "select": {"type": "point", "fields": ["purpose"]}
+            }
+          ],
+          "mark": "bar",
+          "width": 600,
+          "height": 100,
+          "encoding": {
+            "x": {
+              "field": "purpose",
+              "type": "nominal",
+              "title": "Purpose of Deployment",
+              "axis": {"labelAngle": -45},
+              "scale": {
+                "domain": [
+                  "WEAPONS DEVELOPMENT",
+                  "EXPLOSION TEST",
+                  "PEACEFUL EXPLOSION",
+                  "SAFETY/EMERGENCY TEST",
+                  "TRANSPORT",
+                  "COMBAT",
+                  "MILITARY EXERCISE"
+                ]
+              }
+            },
+            "y": {
+              "aggregate": "count",
+              "field": "name",
+              "title": "Number of Explosions"
+            },
+            "tooltip": {"aggregate": "count", "field": "name"},
+            "color": {
+              "condition": {
+                "param": "purposeSelect",
+                "field": "country",
+                "type": "nominal"
+              },
+              "value": "grey"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "config": {"legend": {"orient": "left", "rowPadding": 20, "gridAlign": "all"}}
+}
